@@ -3285,7 +3285,7 @@ static void codec_store_add_end(struct codec_store *cs, struct rtp_payload_type 
 	codec_store_add_link(cs, pt, NULL);
 }
 
-void codec_store_populate(struct codec_store *dst, struct codec_store *src, GHashTable *codec_set) {
+void codec_store_populate_reuse(struct codec_store *dst, struct codec_store *src, GHashTable *codec_set) {
 	// start fresh
 	struct call_media *media = dst->media;
 	struct call *call = media ? media->call : NULL;
@@ -3315,6 +3315,38 @@ void codec_store_populate(struct codec_store *dst, struct codec_store *src, GHas
 			}
 		}
 	}
+}
+
+void codec_store_populate(struct codec_store *dst, struct codec_store *src, GHashTable *codec_set) {
+	// start fresh
+	struct codec_store orig_dst;
+	codec_store_move(&orig_dst, dst);
+
+	struct call_media *media = dst->media;
+	struct call *call = media ? media->call : NULL;
+
+	for (GList *l = src->codec_prefs.head; l; l = l->next) {
+		struct rtp_payload_type *pt = l->data;
+		struct rtp_payload_type *orig_pt = g_hash_table_lookup(orig_dst.codecs,
+				GINT_TO_POINTER(pt->payload_type));
+		ilogs(codec, LOG_DEBUG, "Adding codec " STR_FORMAT " (%i)",
+				STR_FMT(&pt->encoding_with_params),
+				pt->payload_type);
+		if (orig_pt) {
+			// carry over existing options
+			pt->ptime = orig_pt->ptime;
+			pt->for_transcoding = orig_pt->for_transcoding;
+			pt->accepted = orig_pt->accepted;
+			pt->bitrate = orig_pt->bitrate;
+			str_free_dup(&pt->codec_opts);
+			pt->codec_opts = orig_pt->codec_opts;
+			orig_pt->codec_opts = STR_NULL;
+		}
+		__codec_options_set(call, pt, codec_set);
+		codec_store_add_end(dst, pt);
+	}
+
+	codec_store_cleanup(&orig_dst);
 }
 
 void codec_store_strip(struct codec_store *cs, GQueue *strip, GHashTable *except) {

@@ -1496,7 +1496,31 @@ int main(void) {
 	expect(A, "96/opus/48000 102/telephone-event/48000");
 	packet_seq(A, 102, "\x05\x07\x01\x40", 4000, 10, 101, "\x05\x07\x00\x35");
 	packet_seq(B, 101, "\x05\x07\x07\x80", 4000, 10, 102, "\x05\x07\x2d\x00");
-
+	end();
+	//reusing_codecs test
+	flags.reuse_codec = 0;
+	start();
+	sdp_pt(0, PCMA, 8000);
+	sdp_pt(8, PCMU, 8000);
+	sdp_pt(9, PCMA, 8000);
+	offer();
+	expect(A, "0/PCMA/8000 8/PCMU/8000 9/PCMA/8000");
+	sdp_pt(7, PCMA, 8000);
+	sdp_pt(0, PCMA, 8000);
+	sdp_pt(8, PCMU, 8000);
+	answer();
+	expect(B, "7/PCMA/8000 0/PCMA/8000 8/PCMU/8000");
+	sdp_pt(0, PCMA, 8000);
+	sdp_pt(8, PCMU, 8000);
+	sdp_pt(9, PCMA, 8000);
+	offer();
+	expect(A, "0/PCMA/8000 8/PCMU/8000 9/PCMA/8000");
+	sdp_pt(7, PCMA, 8000);
+	sdp_pt(0, PCMA, 8000);
+	sdp_pt(8, PCMU, 8000);
+	answer();
+	expect(B, "7/PCMA/8000 0/PCMA/8000 8/PCMU/8000");
+	end();
 	return 0;
 }
 
