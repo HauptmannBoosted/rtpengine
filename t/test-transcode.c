@@ -1498,7 +1498,7 @@ int main(void) {
 	packet_seq(B, 101, "\x05\x07\x07\x80", 4000, 10, 102, "\x05\x07\x2d\x00");
 	end();
 	//reusing_codecs test
-	flags.reuse_codec = 0;
+	flags.reuse_codec = 1;
 	start();
 	sdp_pt(0, PCMA, 8000);
 	sdp_pt(8, PCMU, 8000);

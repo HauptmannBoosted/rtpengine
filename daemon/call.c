@@ -2178,7 +2178,7 @@ void codecs_offer_answer(struct call_media *media, struct call_media *other_medi
 				STR_FMT(&other_media->monologue->tag),
 				other_media->index);
 		if (flags) {
-			if (flags->reuse_codec == 1){
+			if (flags->reuse_codec){
 				codec_store_populate(&other_media->codecs, &sp->codecs, flags ? flags->codec_set : NULL);
 			}else{
 				codec_store_populate_reuse(&other_media->codecs, &sp->codecs, flags ? flags->codec_set : NULL);
