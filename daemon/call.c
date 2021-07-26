@@ -2177,8 +2177,12 @@ void codecs_offer_answer(struct call_media *media, struct call_media *other_medi
 		ilogs(codec, LOG_DEBUG, "Updating receiver side codecs for offerer " STR_FORMAT " #%u",
 				STR_FMT(&other_media->monologue->tag),
 				other_media->index);
-		codec_store_populate(&other_media->codecs, &sp->codecs, flags ? flags->codec_set : NULL);
 		if (flags) {
+			if (flags->reuse_codec == 1){
+				codec_store_populate(&other_media->codecs, &sp->codecs, flags ? flags->codec_set : NULL);
+			}else{
+				codec_store_populate_reuse(&other_media->codecs, &sp->codecs, flags ? flags->codec_set : NULL);
+			}
 			codec_store_strip(&other_media->codecs, &flags->codec_strip, flags->codec_except);
 			codec_store_offer(&other_media->codecs, &flags->codec_offer, &sp->codecs);
 			if (!other_media->codecs.strip_full)
@@ -2186,6 +2190,8 @@ void codecs_offer_answer(struct call_media *media, struct call_media *other_medi
 			codec_store_accept(&other_media->codecs, &flags->codec_accept, NULL);
 			codec_store_accept(&other_media->codecs, &flags->codec_consume, &sp->codecs);
 			codec_store_track(&other_media->codecs, &flags->codec_mask);
+		}else{
+			codec_store_populate(&other_media->codecs, &sp->codecs, flags ? flags->codec_set : NULL);
 		}
 
 		// we don't update the answerer side if the offer is not RTP but is going
